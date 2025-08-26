@@ -1,0 +1,6 @@
+<script>start("c:\\Users\\rerie\\frontend\\uploads\\");</script>
+<script>onHasParentDirectory();</script>
+<script>addRow("assignments","assignments",1,0,"0 B",1741907844,"3/14/25, 1:17:24 AM");</script>
+<script>addRow("review_courses","review_courses",1,0,"0 B",1742186735,"3/17/25, 6:45:35 AM");</script>
+<script>addRow("submissions","submissions",1,0,"0 B",1742093563,"3/16/25, 4:52:43 AM");</script>
+<script>addRow("videos","videos",1,0,"0 B",1742005241,"3/15/25, 4:20:41 AM");</script>

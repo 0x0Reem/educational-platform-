@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Upload Grades</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: linear-gradient(to right, #74ebd5, #acb6e5); /* خلفية زرقاء متدرجة */
+      background-size: cover;
+    }
+
+    .form-container {
+      background: rgba(255, 255, 255, 0.85); /* شفاف */
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: auto;
+      backdrop-filter: blur(5px);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Upload Student Grades</h2>
+    <form id="grade-form" onsubmit="handleSubmit(event)">
+      <input type="text" id="student-name" placeholder="Student Name" required />
+      <input type="email" id="student-email" placeholder="Student Email" required />
+      <input type="text" id="subject" placeholder="Subject" required />
+      <input type="text" id="grade" placeholder="Grade" required />
+      <input type="text" id="level" placeholder="Level" required />
+      <button type="submit">Upload Grade</button>
+    </form>
+  </div>
+
+  <!-- ScrollReveal CDN -->
+  <script src="https://unpkg.com/scrollreveal"></script>
+
+  <script>
+    // ScrollReveal Animation
+    ScrollReveal().reveal('.form-container', {
+      duration: 1200,
+      origin: 'bottom',
+      distance: '60px',
+      easing: 'ease-in-out',
+      reset: false
+    });
+
+    // Submit Handler
+    async function handleSubmit(event) {
+      event.preventDefault();
+
+      const studentName = document.getElementById("student-name").value;
+      const studentEmail = document.getElementById("student-email").value;
+      const subject = document.getElementById("subject").value;
+      const grade = document.getElementById("grade").value;
+      const level = document.getElementById("level").value;
+
+      try {
+        const response = await fetch("http://localhost:5002/api/admin/evaluations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            student_name: studentName, 
+            student_email: studentEmail,
+            subject, 
+            grade, 
+            level 
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("✅ Grade uploaded successfully!");
+          document.getElementById("grade-form").reset();
+        } else {
+          alert(data.message || "Failed to upload grade.");
+        }
+      } catch (error) {
+        console.error("Error uploading grade:", error);
+        alert("An error occurred.");
+      }
+    }
+  </script>
+
+</body>
+</html>

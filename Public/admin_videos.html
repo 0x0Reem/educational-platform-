@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher – إدارة فيديوهات المراجعة</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #2c3e50;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    form, .video-list {
+      background: #34495e;
+      padding: 20px 30px;
+      border-radius: 8px;
+      width: 360px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      margin-bottom: 30px;
+    }
+    input[type="text"],
+    input[type="file"],
+    button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1rem;
+    }
+    input[type="text"] {
+      background: #ecf0f1;
+      color: #2c3e50;
+    }
+    input[type="file"] {
+      background: #bdc3c7;
+      color: #2c3e50;
+    }
+    button.primary {
+      background: #27ae60;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button.danger {
+      background: #c0392b;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    #status {
+      margin-top: 15px;
+      min-height: 1.2em;
+    }
+    .video-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2c3e50;
+      padding: 8px;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+    .video-item span {
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📤 Course video management</h1>
+
+  <!-- فورم الرفع -->
+  <form id="upload-form">
+    <input type="text" name="title" placeholder="عنوان الفيديو" required>
+    <input type="file" name="video" accept="video/*" required>
+    <button type="submit" class="primary">رفع الفيديو</button>
+    <div id="status"></div>
+  </form>
+
+  <!-- قائمة الفيديوهات الحالية -->
+  <div class="video-list" id="video-list">
+    <h2>🎬 الفيديوهات الحالية</h2>
+    <div id="videos-container">
+      <!-- العناصر ستمتلئ ديناميكياً -->
+    </div>
+  </div>
+
+  <script>
+    const uploadForm = document.getElementById('upload-form');
+    const statusDiv  = document.getElementById('status');
+    const videosCt   = document.getElementById('videos-container');
+
+    // رفع الفيديو
+    uploadForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      statusDiv.textContent = '';
+      const data = new FormData(uploadForm);
+
+      try {
+        const res = await fetch('http://localhost:5002/api/review-courses/upload', {
+          method: 'POST',
+          body: data
+        });
+        const text = await res.text();
+        let payload;
+        try { payload = JSON.parse(text); }
+        catch { payload = { errorText: text }; }
+
+        if (res.ok) {
+          statusDiv.style.color = '#2ecc71';
+          statusDiv.textContent = payload.message || 'تم رفع الفيديو بنجاح!';
+          uploadForm.reset();
+          loadVideos();  // إعادة تحميل القائمة بعد الرفع
+        } else {
+          statusDiv.style.color = '#e74c3c';
+          statusDiv.textContent = 'فشل الرفع: ' + (payload.error || payload.errorText || 'خطأ غير معروف');
+        }
+      } catch (err) {
+        console.error('🚨 خطأ في الاتصال بالسيرفر:', err);
+        statusDiv.style.color = '#e74c3c';
+        statusDiv.textContent = 'تعذّر التواصل مع السيرفر: ' + err.message;
+      }
+    });
+
+    // جلب وعرض الفيديوهات
+    async function loadVideos() {
+      videosCt.innerHTML = 'جاري التحميل...';
+      try {
+        const res = await fetch('http://localhost:5002/api/review-courses');
+        if (!res.ok) throw new Error(`Server ${res.status}`);
+        const list = await res.json();
+        videosCt.innerHTML = '';
+
+        if (list.length === 0) {
+          videosCt.textContent = 'لا توجد فيديوهات حالياً.';
+          return;
+        }
+        list.forEach(v => {
+          const item = document.createElement('div');
+          item.className = 'video-item';
+          const titleSpan = document.createElement('span');
+          titleSpan.textContent = v.title;
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'حذف';
+          delBtn.className = 'danger';
+          delBtn.onclick = () => deleteVideo(v.id);
+          item.appendChild(titleSpan);
+          item.appendChild(delBtn);
+          videosCt.appendChild(item);
+        });
+      } catch (err) {
+        console.error(err);
+        videosCt.textContent = 'خطأ أثناء جلب الفيديوهات.';
+      }
+    }
+
+    // حذف فيديو
+    async function deleteVideo(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا الفيديو؟')) return;
+      try {
+        const res = await fetch(`http://localhost:5002/api/review-courses/${id}`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) throw new Error(`Server ${res.status}`);
+        loadVideos();  // إعادة تحميل القائمة بعد الحذف
+      } catch (err) {
+        console.error('خطأ في الحذف:', err);
+        alert('حدث خطأ أثناء حذف الفيديو.');
+      }
+    }
+
+    // حمل الفيديوهات عند بدء الصفحة
+    document.addEventListener('DOMContentLoaded', loadVideos);
+  </script>
+
+</body>
+</html>

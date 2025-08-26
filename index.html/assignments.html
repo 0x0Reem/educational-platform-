@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignments & Quizzes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .assignment {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .assignment:hover {
+            transform: scale(1.02);
+            background-color: #f9f9f9;
+        }
+        .download-btn {
+            text-decoration: none;
+            background: #f39c12;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+        .download-btn:hover {
+            background: #e67e22;
+        }
+        #loading {
+            text-align: center;
+            font-size: 18px;
+            color: #777;
+            display: none;
+        }
+        /* Upload Form */
+        form {
+            text-align: center;
+            margin-top: 20px;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            margin: 5px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Assignments & Quizzes</h2>
+        <div id="loading">Loading assignments...</div>
+        <div id="assignments-list"></div>
+    </div>
+
+    <script>
+        async function fetchAssignments() {
+            document.getElementById("loading").style.display = "block";
+            try {
+                const response = await fetch("http://localhost:5002/api/assignments");
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const assignments = await response.json();
+                const assignmentContainer = document.getElementById("assignments-list");
+                document.getElementById("loading").style.display = "none";
+                assignmentContainer.innerHTML = "";
+
+                assignments.forEach(assignment => {
+                    const assignmentElement = document.createElement("div");
+                    assignmentElement.classList.add("assignment");
+                    assignmentElement.innerHTML = `
+                        <div>
+                            <h3>${assignment.title}</h3>
+                            <p>Uploaded by: ${assignment.username}</p>
+                        </div>
+                        <a class="download-btn" href="${assignment.file_url}" download>Download</a>
+                    `;
+                    assignmentContainer.appendChild(assignmentElement);
+                });
+
+                // تطبيق الأنيميشن
+                ScrollReveal().reveal('.assignment', { delay: 200, distance: '30px', origin: 'bottom', interval: 100 });
+            } catch (error) {
+                console.error("Error fetching assignments:", error);
+                document.getElementById("loading").innerHTML = "Failed to load assignments.";
+            }
+        }
+
+        fetchAssignments();
+    </script>
+
+    <h3 style="text-align: center;">Upload Your Submission</h3>
+    <form id="submissionForm" enctype="multipart/form-data">
+        <input type="text" id="studentName" placeholder="Enter your name" required>
+        <input type="file" id="submissionFile" required>
+        <button type="submit">Upload</button>
+    </form>
+
+    <p id="uploadMessage" style="text-align: center;"></p>
+
+    <script>
+        document.getElementById("submissionForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const studentName = document.getElementById("studentName").value;
+            const submissionFile = document.getElementById("submissionFile").files[0];
+
+            if (!studentName || !submissionFile) {
+                document.getElementById("uploadMessage").innerText = "Please enter your name and select a file.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("student_name", studentName);
+            formData.append("file", submissionFile);
+
+            try {
+                const response = await fetch("http://localhost:5002/api/submissions/upload", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+                document.getElementById("uploadMessage").innerText = data.message;
+            } catch (error) {
+                console.error("Upload failed:", error);
+                document.getElementById("uploadMessage").innerText = "Upload failed!";
+            }
+        });
+    </script>
+
+</body>
+</html>

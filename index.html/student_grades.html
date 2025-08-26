@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Grades</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: url('https://images.unsplash.com/photo-1571260899304-425eee4c7efc') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .grades-container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(6px);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    .grade {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .grade:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    .grade p {
+      margin: 6px 0;
+      color: #34495e;
+    }
+
+    .grade hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grades-container">
+    <h2>Your Grades</h2>
+    <div id="grades"></div>
+  </div>
+
+  <!-- ScrollReveal CDN -->
+  <script src="https://unpkg.com/scrollreveal"></script>
+
+  <script>
+    ScrollReveal().reveal('.grades-container', {
+      duration: 1000,
+      origin: 'top',
+      distance: '40px',
+      easing: 'ease-in-out',
+      reset: false
+    });
+
+    function revealGrades() {
+      ScrollReveal().reveal('.grade', {
+        duration: 900,
+        interval: 200,
+        origin: 'bottom',
+        distance: '30px',
+        easing: 'ease',
+        reset: false
+      });
+    }
+
+    window.onload = () => {
+      const studentEmail = localStorage.getItem("userEmail");
+
+      if (!studentEmail) {
+        alert("You are not logged in.");
+        window.location.href = "/login.html";
+      } else {
+        fetchGrades(studentEmail);
+      }
+    };
+
+    async function fetchGrades(email) {
+      try {
+        const response = await fetch(`http://localhost:5002/api/student/evaluations?student_email=${email}`);
+        const grades = await response.json();
+
+        const gradesContainer = document.getElementById("grades");
+        if (grades.length > 0) {
+          grades.forEach(grade => {
+            const div = document.createElement("div");
+            div.classList.add("grade");
+            div.innerHTML = `
+              <p><strong>Subject:</strong> ${grade.subject}</p>
+              <p><strong>Grade:</strong> ${grade.grade}</p>
+              <p><strong>Level:</strong> ${grade.level}</p>
+              <hr>
+            `;
+            gradesContainer.appendChild(div);
+          });
+          revealGrades();
+        } else {
+          gradesContainer.innerHTML = "<p style='text-align:center;'>No grades found for this student.</p>";
+        }
+      } catch (error) {
+        console.error("Error fetching grades:", error);
+        alert("Failed to load grades.");
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+<script>start("c:\\Users\\rerie\\frontend\\public\\");</script>
+<script>onHasParentDirectory();</script>
+<script>addRow("admin_assignments.html","admin_assignments.html",0,4683,"4.6 kB",1744994491,"4/18/25, 6:41:31 PM");</script>
+<script>addRow("admin_dashboard.html","admin_dashboard.html",0,4410,"4.3 kB",1745292465,"4/22/25, 5:27:45 AM");</script>
+<script>addRow("admin_grades.html","admin_grades.html",0,3315,"3.2 kB",1745369262,"4/23/25, 2:47:42 AM");</script>
+<script>addRow("admin_submissions.html","admin_submissions.html",0,2384,"2.3 kB",1745210126,"4/21/25, 6:35:26 AM");</script>
+<script>addRow("admin_videos.html","admin_videos.html",0,5757,"5.6 kB",1745371645,"4/23/25, 3:27:25 AM");</script>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🤖 SmartTutor</title>
+  <style>
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes glowingText {
+      0% { text-shadow: 0 0 10px #ff6ec7, 0 0 20px #ff6ec7; }
+      50% { text-shadow: 0 0 20px #9b59b6, 0 0 30px #9b59b6; }
+      100% { text-shadow: 0 0 10px #ff6ec7, 0 0 20px #ff6ec7; }
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      direction: rtl;
+      background: url('https://images.unsplash.com/photo-1600195077075-d99c7d622d9e?auto=format&fit=crop&w=1740&q=80') no-repeat center center fixed;
+      background-size: cover; /* تأكد من تغطية الخلفية بشكل كامل */
+    }
+
+    .overlay {
+      background-color: rgba(65, 130, 150, 0.85); /* بنفسجي شفاف */
+      min-height: 100vh;
+      padding-bottom: 50px;
+    }
+
+    h2 {
+      text-align: center;
+      color: white;
+      padding: 20px 0;
+      font-size: 28px;
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      animation: fadeInUp 0.5s ease, glowingText 2s infinite;
+      margin: 0;
+    }
+
+    #chat-box {
+      width: 80%;
+      max-width: 800px;
+      margin: 20px auto;
+      height: 400px;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      animation: fadeInUp 0.6s ease;
+      backdrop-filter: blur(6px);
+    }
+
+    .message {
+      padding: 10px 15px;
+      margin: 8px 0;
+      border-radius: 15px;
+      max-width: 70%;
+      word-wrap: break-word;
+      line-height: 1.5;
+      font-size: 15px;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .user {
+      background: #4fc3f7;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      background: #ffe0b2;
+      color: #333;
+      align-self: flex-start;
+      border-bottom-left-radius: 0;
+    }
+
+    #user-input {
+      width: 70%;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      margin: 10px auto;
+      display: inline-block;
+      font-size: 16px;
+      animation: pulse 1.5s infinite;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #ff6f00;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-size: 16px;
+      animation: pulse 1.5s infinite;
+    }
+
+    button:hover {
+      background-color: #e65100;
+    }
+
+    #input-container {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <h2>🤖 SmartTutor</h2>
+
+    <div id="chat-box"></div>
+
+    <div id="input-container">
+      <input type="text" id="user-input" placeholder="📝 اكتب رسالتك هنا..." onkeypress="handleKeyPress(event)">
+      <button onclick="sendMessage()">إرسال 🚀</button>
+    </div>
+  </div>
+
+  <script>
+    function handleKeyPress(event) {
+      if (event.key === "Enter") sendMessage();
+    }
+
+    async function sendMessage() {
+      const userInput = document.getElementById('user-input').value.trim();
+      if (!userInput) return;
+
+      const chatBox = document.getElementById("chat-box");
+
+      // إضافة رسالة المستخدم
+      chatBox.innerHTML += `<div class="message user">👤 <strong>أنت:</strong> ${userInput}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // رسالة جاري التفكير...
+      chatBox.innerHTML += `<div class="message bot" id="loading">🤖 ⏳ جاري التفكير...</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        let response = await fetch("http://localhost:5002/api/gemini-chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userInput })
+        });
+
+        let data = await response.json();
+        document.getElementById("loading").remove();
+
+        chatBox.innerHTML += `<div class="message bot">🧠 <strong>البوت:</strong> ${data.reply || "لم يتم تلقي رد من الذكاء الاصطناعي"}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("loading").remove();
+        chatBox.innerHTML += `<div class="message bot">❌ <strong>البوت:</strong> حدث خطأ أثناء الاتصال بالخادم</div>`;
+      }
+
+      document.getElementById("user-input").value = "";
+    }
+  </script>
+</body>
+</html>

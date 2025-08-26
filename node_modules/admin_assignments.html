@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Assignments</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .assignment {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Manage Assignments</h2>
+
+        <h3>Assignments List</h3>
+        <div id="assignments-list"></div>
+
+        <h3>Add New Assignment</h3>
+        <form id="assignmentForm">
+            <input type="text" id="title" placeholder="Assignment Title">
+            <input type="file" id="file" name="file">
+            <button type="submit" onclick="addAssignment(event)">Upload</button>
+        </form>
+        
+
+        <h3>💪🏻</h3>
+        <div id="submissions-list"></div>
+    </div>
+
+    <script>
+        async function fetchAssignments() {
+            const response = await fetch("http://localhost:5002/api/assignments");
+
+
+            const assignments = await response.json();
+            const assignmentContainer = document.getElementById("assignments-list");
+            assignmentContainer.innerHTML = "";
+
+            assignments.forEach(assignment => {
+                const div = document.createElement("div");
+                div.classList.add("assignment");
+                div.innerHTML = 
+                    `<span>${assignment.title}</span>
+                    <button class="delete-btn" onclick="deleteAssignment(${assignment.id})">Delete</button>`;
+                assignmentContainer.appendChild(div);
+            });
+        }
+
+        async function addAssignment(event) {
+            event.preventDefault();
+            const title = document.getElementById("title").value;
+            const file = document.getElementById("file").files[0];
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("file", file);
+
+            await fetch("http://localhost:5002/api/assignments/add", {
+                method: "POST",
+                body: formData
+            });
+
+            fetchAssignments();
+            document.getElementById("assignmentForm").reset();
+        }
+
+        async function deleteAssignment(id) {
+            await fetch(`http://localhost:5002/api/assignments/delete/${id}`, { method: "DELETE" });
+            fetchAssignments();
+        }
+
+        async function addAssignment(event) {
+    event.preventDefault();
+    const title = document.getElementById("title").value;
+    const file = document.getElementById("file").files[0];
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("file", file);
+
+    await fetch("http://localhost:5002/api/assignments/upload", {  // تم تعديل الرابط هنا
+        method: "POST",
+        body: formData
+    });
+
+    fetchAssignments();
+    document.getElementById("assignmentForm").reset();
+}
+
+        fetchAssignments();
+        fetchSubmissions();
+    </script>
+
+</body>
+</html>

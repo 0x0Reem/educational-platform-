@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Courses</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* تنسيق الصفحة بالكامل */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: rgba(44, 62, 80, 0.9);
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* تنسيق العنوان */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease-in-out;
+        }
+
+        /* تنسيق حاوية الفيديوهات */
+        #videos-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* تنسيق كل فيديو */
+        .video-card {
+            background: #393c4b;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 420px;
+            animation: fadeInUp 0.8s ease-in-out;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* تنسيق عنوان الفيديو */
+        .video-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ffcc00;
+        }
+
+        /* تنسيق الفيديو */
+        video {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        /* تأثيرات التحريك */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📚 Review Courses</h1>
+    <div id="videos-container"></div>
+
+    <script>
+        async function loadVideos() {
+          const container = document.getElementById("videos-container");
+          try {
+            const res = await fetch("http://localhost:5002/api/review-courses");
+            const list = await res.json();
+            if (!Array.isArray(list) || list.length === 0) {
+              container.innerHTML = "<p>لا توجد فيديوهات حتى الآن.</p>";
+              return;
+            }
+            container.innerHTML = "";  // مسح الرسالة الأولية
+            list.forEach(v => {
+              const card = document.createElement("div");
+              card.className = "video-card";
+              card.innerHTML = `
+                <h3>${v.title}</h3>
+                <video controls width="640" height="360"
+                       src="http://localhost:5002${v.video_path}">
+                  متصفحك لا يدعم تشغيل الفيديو.
+                </video>
+              `;
+              container.appendChild(card);
+            });
+          } catch (err) {
+            console.error("Error loading videos:", err);
+            container.innerHTML = "<p>خطأ في تحميل الفيديوهات.</p>";
+          }
+        }
+    
+        loadVideos();
+      </script>
+</body>
+</html>
